@@ -22,8 +22,8 @@ export async function POST(request) {
   try {
     const payload = await request.json();
     await client.connect();
-    const db = client.db("recipes");
-    const inventory = db.collection("inventory");
+    const db = client.db("submit-recipe");
+    const inventory = db.collection("recipes");
 
     const result = await inventory.insertOne(payload);
 
@@ -50,8 +50,8 @@ export async function POST(request) {
 export async function GET() {
   try {
     await client.connect();
-    const db = client.db("recipes");
-    const inventory = db.collection("inventory");
+    const db = client.db("submit-recipe");
+    const inventory = db.collection("recipes");
 
     const result = await inventory.find({}).toArray();
 
