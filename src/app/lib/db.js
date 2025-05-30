@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const { MONGO_USERNAME, MONGO_PASSWORD } = process.env;
 
 export const connectionStr =

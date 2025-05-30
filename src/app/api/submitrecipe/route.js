@@ -1,75 +1,162 @@
-import { connectionStr } from "@/app/lib/db";
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
+import { Image } from "@/app/modals/recipe";
+import { connectionStr } from "@/app/lib/db";
+import { corsHeaders } from "@/app/api/cors";
 
-const client = new MongoClient(connectionStr);
-
-// CORS Headers
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend URL in production
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
-
-export async function OPTIONS() {
+export const OPTIONS = async () => {
   return new NextResponse(null, {
     status: 204,
     headers: corsHeaders,
   });
-}
+};
 
-export async function POST(request) {
+export const POST = async (request) => {
   try {
-    const payload = await request.json();
-    await client.connect();
-    const db = client.db("submit-recipe");
-    const inventory = db.collection("recipes");
+    await mongoose.connect(connectionStr);
 
-    const result = await inventory.insertOne(payload);
+    const data = await request.formData();
+    const file = data.get("file");
 
-    return new NextResponse(JSON.stringify({ success: true, data: result }), {
-      status: 200,
-      headers: corsHeaders,
+    if (!file) {
+      return NextResponse.json(
+        { success: false, error: "No file found" },
+        {
+          headers: corsHeaders,
+        }
+      );
+    }
+
+    const bufferData = await file.arrayBuffer();
+    const buffer = Buffer.from(bufferData);
+
+    const newImage = new Image({
+      name: file.name,
+      data: buffer,
+      contentType: file.type,
     });
-  } catch (error) {
-    console.error("Error inserting recipe:", error);
-    return new NextResponse(
-      JSON.stringify({
-        success: false,
-        message: "Recipe not added",
-        error: error.message,
-      }),
+
+    await newImage.save();
+
+    return NextResponse.json(
       {
-        status: 500,
+        response: "Successfully Uploaded",
+        success: true,
+      },
+      {
+        headers: corsHeaders,
+      }
+    );
+  } catch (error) {
+    console.error("POST error:", error);
+    return NextResponse.json(
+      {
+        response: "Failed",
+        success: false,
+        error: error.message,
+      },
+      {
         headers: corsHeaders,
       }
     );
   }
-}
+};
 
-export async function GET() {
+export const GET = async () => {
   try {
-    await client.connect();
-    const db = client.db("submit-recipe");
-    const inventory = db.collection("recipes");
+    await mongoose.connect(connectionStr);
 
-    const result = await inventory.find({}).toArray();
+    const images = await Image.find().sort({ createdAt: -1 });
 
-    return new NextResponse(
-      JSON.stringify({ success: true, recipes: result }),
+    const formatted = images.map((img) => ({
+      _id: img._id.toString(),
+      name: img.name,
+      imageUrl: `data:${img.contentType};base64,${img.data.toString("base64")}`,
+    }));
+
+    return NextResponse.json(
+      { success: true, recipes: formatted },
       {
         status: 200,
         headers: corsHeaders,
       }
     );
   } catch (error) {
-    console.error("Error:", error);
-    return new NextResponse(
-      JSON.stringify({ success: false, error: error.message }),
+    console.error("GET error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
       {
         status: 500,
         headers: corsHeaders,
       }
     );
   }
-}
+};
+
+// pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+// const client = new MongoClient(connectionStr);
+
+// export async function OPTIONS() {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: corsHeaders,
+//   });
+// }
+
+// export async function POST(request) {
+//   try {
+//     const payload = await request.json();
+//     await client.connect();
+//     const db = client.db("submit-recipe");
+//     const inventory = db.collection("recipes");
+
+//     const result = await inventory.insertOne(payload);
+
+//     return new NextResponse(JSON.stringify({ success: true, data: result }), {
+//       status: 200,
+//       headers: corsHeaders,
+//     });
+//   } catch (error) {
+//     console.error("Error inserting recipe:", error);
+//     return new NextResponse(
+//       JSON.stringify({
+//         success: false,
+//         message: "Recipe not added",
+//         error: error.message,
+//       }),
+//       {
+//         status: 500,
+//         headers: corsHeaders,
+//       }
+//     );
+//   }
+// }
+
+// export async function GET() {
+//   try {
+//     await client.connect();
+//     const db = client.db("submit-recipe");
+//     const inventory = db.collection("recipes");
+
+//     const result = await inventory.find({}).toArray();
+
+//     return new NextResponse(
+//       JSON.stringify({ success: true, recipes: result }),
+//       {
+//         status: 200,
+//         headers: corsHeaders,
+//       }
+//     );
+//   } catch (error) {
+//     console.error("Error:", error);
+//     return new NextResponse(
+//       JSON.stringify({ success: false, error: error.message }),
+//       {
+//         status: 500,
+//         headers: corsHeaders,
+//       }
+//     );
+//   }
+// }
+
+// .....................................................................................
