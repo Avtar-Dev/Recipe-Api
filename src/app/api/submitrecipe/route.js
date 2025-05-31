@@ -16,48 +16,48 @@ export const POST = async (request) => {
     await mongoose.connect(connectionStr);
 
     const data = await request.formData();
-    const file = data.get("file");
 
-    if (!file) {
-      return NextResponse.json(
-        { success: false, error: "No file found" },
-        {
-          headers: corsHeaders,
-        }
-      );
-    }
+    const name = data.get("name");
+    const description = data.get("description");
+    const ingredients = data.get("ingredients");
+    const equipments = data.get("equipments");
+    const steps = data.get("steps");
+    const category = data.get("category");
+    const file = data.get("image");
 
-    const bufferData = await file.arrayBuffer();
-    const buffer = Buffer.from(bufferData);
+    const bufferData = await file?.arrayBuffer();
+    const buffer = file ? Buffer.from(bufferData) : null;
 
-    const newImage = new Image({
-      name: file.name,
-      data: buffer,
-      contentType: file.type,
+    const newRecipe = new Image({
+      name,
+      description,
+      ingredients,
+      equipments,
+      steps,
+      category,
+      image: file
+        ? {
+            name: file.name,
+            data: buffer,
+            contentType: file.type,
+          }
+        : null,
     });
 
-    await newImage.save();
+    await newRecipe.save();
 
     return NextResponse.json(
       {
-        response: "Successfully Uploaded",
+        response: "Recipe uploaded successfully",
         success: true,
       },
-      {
-        headers: corsHeaders,
-      }
+      { headers: corsHeaders }
     );
   } catch (error) {
     console.error("POST error:", error);
     return NextResponse.json(
-      {
-        response: "Failed",
-        success: false,
-        error: error.message,
-      },
-      {
-        headers: corsHeaders,
-      }
+      { response: "Upload failed", success: false, error: error.message },
+      { headers: corsHeaders }
     );
   }
 };
@@ -66,12 +66,21 @@ export const GET = async () => {
   try {
     await mongoose.connect(connectionStr);
 
-    const images = await Image.find().sort({ createdAt: -1 });
+    const recipes = await Image.find().sort({ createdAt: -1 });
 
-    const formatted = images.map((img) => ({
-      _id: img._id.toString(),
-      name: img.name,
-      imageUrl: `data:${img.contentType};base64,${img.data.toString("base64")}`,
+    const formatted = recipes.map((doc) => ({
+      _id: doc._id.toString(),
+      name: doc.name,
+      description: doc.description,
+      ingredients: doc.ingredients,
+      equipments: doc.equipments,
+      steps: doc.steps,
+      category: doc.category,
+      imageUrl: doc.image
+        ? `data:${doc.image.contentType};base64,${doc.image.data.toString(
+            "base64"
+          )}`
+        : null,
     }));
 
     return NextResponse.json(
