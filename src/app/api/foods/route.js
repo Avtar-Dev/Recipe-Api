@@ -16,7 +16,7 @@ export async function POST(request) {
   try {
     const payload = await request.json();
     await client.connect();
-    const db = client.db("youtube");
+    const db = client.db("foods");
     const inventory = db.collection("data");
 
     const result = await inventory.insertOne(payload);
@@ -26,11 +26,11 @@ export async function POST(request) {
       headers: corsHeaders,
     });
   } catch (error) {
-    console.error("Error inserting Video:", error);
+    console.error("Error inserting foods:", error);
     return new NextResponse(
       JSON.stringify({
         success: false,
-        message: "Video not added",
+        message: "foods not added",
         error: error.message,
       }),
       {
@@ -44,7 +44,7 @@ export async function POST(request) {
 export async function GET() {
   try {
     await client.connect();
-    const db = client.db("youtube");
+    const db = client.db("foods");
     const inventory = db.collection("data");
 
     const result = await inventory.find({}).toArray();
