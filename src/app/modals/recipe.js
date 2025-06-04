@@ -19,3 +19,27 @@ const recipeSchema = new mongoose.Schema(
 
 export const Image =
   mongoose.models.Image || mongoose.model("Image", recipeSchema);
+
+// ...........................................................................................
+
+const foodsSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    description: { type: String },
+    ingredients: { type: String },
+    equipments: { type: String },
+    steps: { type: String },
+    category: { type: String }, // e.g., "indian", "italian", "thai"
+
+    image: {
+      name: { type: String },
+      data: { type: Buffer },
+      contentType: { type: String },
+    },
+  },
+  { timestamps: true }
+);
+
+// Export the model
+export const FoodsData =
+  mongoose.models.FoodsData || mongoose.model("FoodsData", foodsSchema);
