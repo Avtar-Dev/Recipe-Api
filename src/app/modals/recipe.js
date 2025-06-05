@@ -40,6 +40,5 @@ const foodsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Export the model
 export const FoodsData =
   mongoose.models.FoodsData || mongoose.model("FoodsData", foodsSchema);
