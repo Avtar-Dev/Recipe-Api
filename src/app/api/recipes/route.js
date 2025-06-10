@@ -47,13 +47,17 @@ export async function POST(request) {
   }
 }
 
-export async function GET() {
+export async function GET(req) {
+  const query = req.nextUrl.searchParams.get("q");
+  console.log("params", query);
   try {
     await client.connect();
     const db = client.db("recipes");
     const inventory = db.collection("inventory");
 
-    const result = await inventory.find({}).toArray();
+    const result = await inventory
+      .find({ name: { $regex: query, $options: "i" } })
+      .toArray();
 
     return new NextResponse(
       JSON.stringify({ success: true, recipes: result }),

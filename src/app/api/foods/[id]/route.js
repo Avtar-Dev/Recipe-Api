@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
-import { Image, FoodsData } from "@/app/modals/recipe";
+import { FoodsData } from "@/app/modals/recipe";
 import { connectionStr } from "@/app/lib/db";
 import { corsHeaders } from "@/app/api/cors";
 
