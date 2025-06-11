@@ -55,10 +55,10 @@ export async function GET(req) {
     const db = client.db("recipes");
     const inventory = db.collection("inventory");
 
-    const result = await inventory
-      .find({ name: { $regex: query, $options: "i" } })
-      .toArray();
-
+    const result = await inventory.find({}).toArray();
+    // .find({ name: { $regex: query, $options: "i" } })                    //for debouncing
+    // .toArray();
+    // $options: "i" makes the search case-insensitive (e.g., "apple" matches "Apple", "APPLE", etc.).
     return new NextResponse(
       JSON.stringify({ success: true, recipes: result }),
       {
